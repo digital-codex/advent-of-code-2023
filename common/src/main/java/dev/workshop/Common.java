@@ -20,7 +20,14 @@ public class Common {
     private static final String PATH_PROPERTY_KEY = "path";
     private static final String COOKIE_PROPERTY_KEY = "cookie";
 
+    private static Configuration configuration = null;
+
     private Common() {}
+
+    @FunctionalInterface
+    public interface Solution<T> {
+        T run(String input);
+    }
 
     public static class Configuration {
         private final Map<String, String> properties;
@@ -55,13 +62,24 @@ public class Common {
         }
     }
 
-    public static String readInputFromSource(String day, String cookie) throws IOException, InterruptedException {
-        Configuration configuration = new Configuration();
-        configuration.addProperty(Common.URI_PROPERTY_KEY, configuration.getProperty("uri.format").formatted(day));
-        configuration.addProperty(Common.PATH_PROPERTY_KEY, configuration.getProperty("path.format").formatted("day" + day));
-        configuration.addProperty(Common.COOKIE_PROPERTY_KEY, cookie);
+    public static <T> T run(String[] args, String day, String cookie, Solution<T> solution) throws IOException, InterruptedException {
+        String input = (args.length == 1)
+                ? Common.readInputFromFile(Paths.get(args[0]))
+                : Common.readInputFromSource(day, cookie);
 
-        return Common.readInputFromSource(configuration);
+        return solution.run(input);
+    }
+
+    public static String readInputFromSource(String day, String cookie) throws IOException, InterruptedException {
+        if (Common.configuration == null) {
+            Common.configuration = new Configuration();
+        }
+
+        Common.configuration.addProperty(Common.URI_PROPERTY_KEY, Common.configuration.getProperty("uri.format").formatted(day));
+        Common.configuration.addProperty(Common.PATH_PROPERTY_KEY, Common.configuration.getProperty("path.format").formatted("day" + day));
+        Common.configuration.addProperty(Common.COOKIE_PROPERTY_KEY, cookie);
+
+        return Common.readInputFromSource(Common.configuration);
     }
 
     public static String readInputFromSource(Configuration configuration) throws IOException, InterruptedException {

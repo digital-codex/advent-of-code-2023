@@ -1,7 +1,6 @@
 package dev.workshop;
 
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -10,16 +9,12 @@ public class Main {
     public static final System.Logger logger = System.getLogger(Main.class.getName());
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        String input = (args.length != 1)
-                ? Common.readInputFromFile(Paths.get(args[0]))
-                : Common.readInputFromSource("2", System.getenv("AOC_COOKIE"));
-
-        int result = Main.solution(input.split("\n"));
-        logger.log(System.Logger.Level.ALL, "Result: %d%n", result);
+        int result = Common.run(args, "2", System.getenv("AOC_COOKIE"), Main::solution);
+        logger.log(System.Logger.Level.INFO, "Result: " + result);
     }
 
-    private static int solution(String[] splitInput) {
-        return Arrays.stream(splitInput)
+    private static int solution(String input) {
+        return Arrays.stream(input.split("\n"))
                 .parallel()
                 .map(Main::mapGameToRounds)
                 .mapToInt(Main::mapRoundsToResult)
