@@ -1,46 +1,37 @@
 package dev.workshop;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 public class Main {
-    public static void main(String[] args) throws IOException {
-        if (args.length != 1) {
-            System.out.println("Usage: day2 <path-to-input-file>");
-            System.exit(-1);
-        }
+    public static final System.Logger logger = System.getLogger(Main.class.getName());
 
-        String input = readInput(args[0]);
+    public static void main(String[] args) throws IOException, InterruptedException {
+        String input = (args.length != 1)
+                ? Common.readInputFromFile(Paths.get(args[0]))
+                : Common.readInputFromSource("2", System.getenv("AOC_COOKIE"));
+
         int result = Main.solution(input.split("\n"));
-
-        System.out.printf("Result: %d%n", result);
-    }
-
-    private static String readInput(String path) throws IOException {
-        return Files.readString(Paths.get(path), Charset.defaultCharset());
+        logger.log(System.Logger.Level.ALL, "Result: %d%n", result);
     }
 
     private static int solution(String[] splitInput) {
         return Arrays.stream(splitInput)
                 .parallel()
-                .map(Main::mapGameToRoundsArray)
-                .mapToInt(Main::mapGameToInt)
+                .map(Main::mapGameToRounds)
+                .mapToInt(Main::mapRoundsToResult)
                 .sum();
     }
 
-    private static String[] mapGameToRoundsArray(String input) {
+    private static String[] mapGameToRounds(String input) {
         return input.split(":")[1].trim().split(";");
     }
 
-    private static int mapGameToInt(String[] rounds) {
-        Map<String, Integer> minValueMap = new HashMap<>(
-                Map.of("red", 0, "green", 0, "blue", 0)
-        );
+    private static int mapRoundsToResult(String[] rounds) {
+        Map<String, Integer> minValueMap = new HashMap<>();
 
         for (String round : rounds) {
             for (String set : round.trim().split(",")) {
@@ -48,7 +39,7 @@ public class Main {
                 int value = Integer.parseInt(setSplit[0].trim());
                 String key = setSplit[1].trim();
 
-                int curr = minValueMap.get(key);
+                int curr = minValueMap.getOrDefault(key, 0);
                 if (value > curr) {
                     minValueMap.put(key, value);
                 }
