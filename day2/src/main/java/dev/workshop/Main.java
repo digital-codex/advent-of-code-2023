@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,49 +26,37 @@ public class Main {
     }
 
     private static int solution(String[] splitInput) {
-        String[][][] games = Main.buildGameArray(splitInput);
-        int result = 0;
-
-        for (String[][] game : games) {
-            Map<String, Integer> minValueMap = new HashMap<>(Map.of("red", 0, "green", 0, "blue", 0));
-            for (String[] round : game) {
-                for (String set : round) {
-                    String[] setSplit = set.split(" ");
-
-                    int value = Integer.parseInt(setSplit[0].trim());
-                    String key = setSplit[1].trim();
-
-                    int curr = minValueMap.get(key);
-                    if (value > curr) {
-                        minValueMap.put(key, value);
-                    }
-                }
-            }
-            result += minValueMap.values().stream().mapToInt(Integer::intValue).reduce(1, (a, b) -> a * b);
-        }
-
-        return result;
+        return Arrays.stream(splitInput)
+                .parallel()
+                .map(Main::mapGameToRoundsArray)
+                .mapToInt(Main::mapGameToInt)
+                .sum();
     }
 
-    private static String[][][] buildGameArray(String[] splitInput) {
-        String[][][] games = new String[splitInput.length][][];
+    private static String[] mapGameToRoundsArray(String input) {
+        return input.split(":")[1].trim().split(";");
+    }
 
-        for (int i = 0; i < splitInput.length; i++) {
-            String[] gameSplit = splitInput[i].split(":");
+    private static int mapGameToInt(String[] rounds) {
+        Map<String, Integer> minValueMap = new HashMap<>(
+                Map.of("red", 0, "green", 0, "blue", 0)
+        );
 
-            String[] roundSplit = gameSplit[1].trim().split(";");
-            games[i] = new String[roundSplit.length][];
+        for (String round : rounds) {
+            for (String set : round.trim().split(",")) {
+                String[] setSplit = set.trim().split(" ");
+                int value = Integer.parseInt(setSplit[0].trim());
+                String key = setSplit[1].trim();
 
-            for (int j = 0; j < roundSplit.length; j++) {
-                String[] valueSplit = roundSplit[j].trim().split(",");
-                games[i][j] = new String[valueSplit.length];
-
-                for (int k = 0; k < valueSplit.length; k++) {
-                    games[i][j][k] = valueSplit[k].trim();
+                int curr = minValueMap.get(key);
+                if (value > curr) {
+                    minValueMap.put(key, value);
                 }
             }
         }
 
-        return games;
+        return minValueMap.values().stream()
+                .mapToInt(Integer::intValue)
+                .reduce(1, (a, b) -> a * b);
     }
 }

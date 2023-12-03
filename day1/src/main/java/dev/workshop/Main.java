@@ -24,12 +24,18 @@ public class Main {
     }
 
     private static int solution(String[] splitInput) {
-        return Arrays.stream(splitInput).parallel().map(Main::mapLetterRepresentationToDigitRepresentation).mapToInt(Main::mapCalibrationValueToInt).sum();
+        return Arrays.stream(splitInput)
+                .parallel()
+                .map(Main::mapLetterRepresentationToDigitRepresentation)
+                .mapToInt(Main::mapCalibrationValueToInt)
+                .sum();
     }
 
     private static int mapCalibrationValueToInt(String input) {
         int[] potential = input.chars().filter(Character::isDigit).toArray();
-        return (potential.length >= 1) ? Integer.parseInt("" + (char) potential[0] + (char) potential[potential.length - 1]) : 0;
+        return (potential.length >= 1)
+                ? Integer.parseInt("" + (char) potential[0] + (char) potential[potential.length - 1])
+                : 0;
     }
 
     private static String mapLetterRepresentationToDigitRepresentation(String input) {
@@ -40,26 +46,22 @@ public class Main {
         StringBuilder result = new StringBuilder();
 
         int i = 0;
-        while (i < input.length() && !Main.checkForwardLetterRepresentation(input, i, input.charAt(i), result)) {
-            i++;
-        }
+        while (i < input.length() && !Main.checkForwardLetterRepresentation(input, i, input.charAt(i), result)) i++;
 
         return result.toString();
     }
 
     private static String mapLastLetterRepresentation(String input) {
         StringBuilder result = new StringBuilder();
-        String substring = new StringBuilder(input).reverse().toString();
+        String reverse = new StringBuilder(input).reverse().toString();
 
         int i = 0;
-        while (i < substring.length() && !Main.checkBackwardLetterRepresentation(substring, i, substring.charAt(i), result)) {
-            i++;
-        }
+        while (i < reverse.length() && !Main.checkBackwardLetterRepresentation(reverse, i, reverse.charAt(i), result)) i++;
 
         return result.reverse().toString();
     }
 
-    // don't see a way to reduce the cognitive complexity from 19 to 15
+    @SuppressWarnings("java:S3776")
     private static boolean checkForwardLetterRepresentation(String input, int i, char c, StringBuilder result) {
         boolean found = false;
         switch (c) {
@@ -105,7 +107,7 @@ public class Main {
         return found;
     }
 
-    // don't see a way to reduce the cognitive complexity from 17 to 15
+    @SuppressWarnings("java:S3776")
     private static boolean checkBackwardLetterRepresentation(String input, int i, char c, StringBuilder result) {
         boolean found = false;
         switch (c) {
@@ -146,7 +148,7 @@ public class Main {
     }
 
     private static boolean matchLetterRepresentation(String input, int start, int length, String match, char isMatch, char isNonMatch, StringBuilder result) {
-        if (matchLetterRepresentation(input, start, length, match)) {
+        if (letterRepresentationIsMatch(input, start, length, match)) {
             result.append(isMatch);
             return true;
         } else {
@@ -155,7 +157,7 @@ public class Main {
         }
     }
 
-    private static boolean matchLetterRepresentation(String input, int start, int length, String match) {
+    private static boolean letterRepresentationIsMatch(String input, int start, int length, String match) {
         return start + length <= input.length() && input.substring(start, start + length).equals(match);
     }
 }
