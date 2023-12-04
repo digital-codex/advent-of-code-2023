@@ -24,20 +24,15 @@ public class Common {
 
     private Common() {}
 
-    @FunctionalInterface
-    public interface Solution<T> {
-        T run(String input);
-    }
-
     public static class Configuration {
         private final Map<String, String> properties;
 
-        public Configuration() throws IOException {
-            this(Paths.get(System.getProperty("user.dir"), "common", "src", "main", "resources", "common.env"));
-        }
-
         public Configuration(Path path) throws IOException {
             this.properties = this.loadProperties(path);
+        }
+
+        public Configuration() throws IOException {
+            this(Paths.get(System.getProperty("user.dir"), "common", "src", "main", "resources", "common.env"));
         }
 
         public String getProperty(String key) {
@@ -62,24 +57,8 @@ public class Common {
         }
     }
 
-    public static <T> T run(String[] args, String day, String cookie, Solution<T> solution) throws IOException, InterruptedException {
-        String input = (args.length == 1)
-                ? Common.readInputFromFile(Paths.get(args[0]))
-                : Common.readInputFromSource(day, cookie);
-
-        return solution.run(input);
-    }
-
-    public static String readInputFromSource(String day, String cookie) throws IOException, InterruptedException {
-        if (Common.configuration == null) {
-            Common.configuration = new Configuration();
-        }
-
-        Common.configuration.addProperty(Common.URI_PROPERTY_KEY, Common.configuration.getProperty("uri.format").formatted(day));
-        Common.configuration.addProperty(Common.PATH_PROPERTY_KEY, Common.configuration.getProperty("path.format").formatted("day" + day));
-        Common.configuration.addProperty(Common.COOKIE_PROPERTY_KEY, cookie);
-
-        return Common.readInputFromSource(Common.configuration);
+    public static String readInputFromFile(Path path) throws IOException {
+        return Files.readString(path, Charset.defaultCharset());
     }
 
     public static String readInputFromSource(Configuration configuration) throws IOException, InterruptedException {
@@ -102,7 +81,24 @@ public class Common {
         return body;
     }
 
-    public static String readInputFromFile(Path path) throws IOException {
-        return Files.readString(path, Charset.defaultCharset());
+    public static String readInputFromSource(String day, String cookie) throws IOException, InterruptedException {
+        if (Common.configuration == null) {
+            Common.configuration = new Configuration();
+        }
+
+        Common.configuration.addProperty(Common.URI_PROPERTY_KEY, Common.configuration.getProperty("uri.format").formatted(day));
+        Common.configuration.addProperty(Common.PATH_PROPERTY_KEY, Common.configuration.getProperty("path.format").formatted("day" + day));
+        Common.configuration.addProperty(Common.COOKIE_PROPERTY_KEY, cookie);
+
+        return Common.readInputFromSource(Common.configuration);
+    }
+
+    @FunctionalInterface
+    public interface Solution<T> {
+        T run(String input);
+    }
+
+    public static <T> T run(String[] args, String day, String cookie, Solution<T> solution) throws IOException, InterruptedException {
+        return solution.run((args.length == 1) ? Common.readInputFromFile(Paths.get(args[0])) : Common.readInputFromSource(day, cookie));
     }
 }
